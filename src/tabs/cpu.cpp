@@ -21,7 +21,7 @@ uint64_t CPU::get_pid_at_pos() {
     return processes.at(proc_table_pos).process.pid;
 }
 
-void get_temps(std::vector<_Float32> *temps) {
+void get_temps(std::vector<double> *temps) {
 	DIR *dir;
 	struct dirent *file;
     FILE *fp_type;
@@ -88,13 +88,13 @@ void CPU::update_cpu_process(struct cpu_process *proc) {
 
     get_uptime(&proc->cpu_uptime);
 
-    _Float32 cpu_time_delta = (proc->cpu_uptime - previous_cpu_uptime);
-    _Float32 proc_stat_times = proc->stats.utime + proc->stats.stime +
+    double cpu_time_delta = (proc->cpu_uptime - previous_cpu_uptime);
+    double proc_stat_times = proc->stats.utime + proc->stats.stime +
                                proc->stats.cutime + proc->stats.cstime;
-    _Float32 previous_stat_times = previous_pid_stats.utime + previous_pid_stats.stime +
+    double previous_stat_times = previous_pid_stats.utime + previous_pid_stats.stime +
                                    previous_pid_stats.cutime + previous_pid_stats.cstime;
-    _Float32 proc_time_delta = (proc_stat_times - previous_stat_times)*1.0 / ticks_per_s;
-    _Float32 usage = proc_time_delta / cpu_time_delta * 100.0;
+    double proc_time_delta = static_cast<double>((proc_stat_times - previous_stat_times)) / ticks_per_s;
+    double usage = static_cast<double>(proc_time_delta / cpu_time_delta) * 100;
     // If really quick refresh happens protect against divide by 0
     proc->usage_percent = cpu_time_delta ? usage : 0;
 }
@@ -164,18 +164,18 @@ void CPU::update() {
     mvwprintw(tab_window, info_block_start, 0, "Model: %s", cores[0].model_name.c_str());
     uint8_t num_sockets = cores.back().physical_id + 1;
     mvwprintw(tab_window, info_block_start+1, 0, "Cores/Threads: %u/%lu", cores[0].cpu_cores*num_sockets, cores.size());
-    std::vector<float> temps = {};
+    std::vector<double> temps = {};
     get_temps(&temps);
     mvwprintw(tab_window, info_block_start+2, 0, "Temp:");
     for (uint32_t i = 0; i < temps.size(); i++) {
-        mvwprintw(tab_window, info_block_start+2, 5+i*7, " %.1f°C        ", temps[i]);
+        mvwprintw(tab_window, info_block_start+2, 5+i*7, " %.1f°C        ", (double)temps[i]);
         wrefresh(tab_window);
     }
-    _Float32 avg_clock = 0;
+    double avg_clock = 0;
     for (int i = 0; i < (int)cores.size(); i++)
         avg_clock += cores[i].cpu_MHz;
     avg_clock /= cores[0].siblings;
-    mvwprintw(tab_window, info_block_start+3, 0, "Avg clock speed: %.2fMHz", avg_clock);
+    mvwprintw(tab_window, info_block_start+3, 0, "Avg clock speed: %.2fMHz", (double)avg_clock);
     // system_uptime get updated through update_cpu_process
     get_uptime(&system_uptime);
     mvwprintw(tab_window, info_block_start+4, 0, "Uptime: %s", format_time(system_uptime).c_str());
@@ -195,7 +195,7 @@ void CPU::update() {
         /* Clear extra characters if previous value was longer */
 		wclrtoeol(tab_window);
         mvwprintw(tab_window, proc_block_start+i, COLUMN_2, "%s", proc->process.name.c_str());
-        mvwprintw(tab_window, proc_block_start+i, COLUMN_3, "%6.2f", proc->usage_percent);
+        mvwprintw(tab_window, proc_block_start+i, COLUMN_3, "%6.2f", (double)proc->usage_percent);
         mvwprintw(tab_window, proc_block_start+i, COLUMN_4, "%s", format_time(proc->uptime).c_str());
         mvwprintw(tab_window, proc_block_start+i, COLUMN_5, "%s", proc->process.cmd.c_str());
         pos++;

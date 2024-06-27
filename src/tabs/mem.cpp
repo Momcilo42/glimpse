@@ -6,6 +6,7 @@
 #include <memory> // unique_ptr
 #include <unistd.h> // getpagesize()
 #include <sstream> // stringstream
+#include <array>    // std::array
 
 #define COLUMN_1    0                   // pid
 #define COLUMN_2    COLUMN_1+8          // name
@@ -123,7 +124,7 @@ void MEM::dmi_decode_mem() {
     const char* cmd = "dmidecode --type memory";
     std::array<char, 128> buffer;
     std::string line;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd, "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
@@ -262,12 +263,18 @@ MEM::MEM() {
 	wtimeout(tab_window, 1000);
     set_info_block_size(bank_offset+banks.size());
 
-    if (board_data[0].Maximum_Capacity > 1024)
-        mvwprintw(tab_window, info_block_start, 0, "ECC support: %s Max capacity: %uTiB",
-                  board_data[0].Error_Correction_Type.c_str(), board_data[0].Maximum_Capacity / 1024);
-    else
-        mvwprintw(tab_window, info_block_start, 0, "ECC support: %s Max capacity: %uGB",
-                  board_data[0].Error_Correction_Type.c_str(), board_data[0].Maximum_Capacity);
+    if (!board_data.empty()) {
+        bool over_1024 = false;
+        if (board_data[0].Maximum_Capacity >= 1024)
+            over_1024 = true;
+        else
+            over_1024 = false;
+
+        int max_cap = board_data[0].Maximum_Capacity / (over_1024 ? 1024 : 1);
+        mvwprintw(tab_window, info_block_start, 0, "ECC support: %s Max capacity: %u%s",
+                  board_data[0].Error_Correction_Type.c_str(), max_cap,
+                  over_1024 ? "TiB " : "GiB");
+    }
     for (int i = 0; i < (int)banks.size(); i++)
         if (banks.at(i).Size)
             mvwprintw(tab_window, info_block_start+i+bank_offset, 0, "%s: %s %uGB @%s %s %s",

@@ -2,15 +2,17 @@
 #define JEDEC_HPP_
 
 #include <unordered_map>
+#include <array>
 #include <string>
 #include <sstream>
+#include <cstdint>
 
 /* PDF downloaded for free from https://www.jedec.org/system/files/docs/JEP106BG.pdf */
 /* The present list is complete as of May 1, 2023. */
 
 #define CONTINUATION_CODE                   "7F"
 
-std::unordered_map<std::string, std::string> bank1 {
+const std::unordered_map<std::string, std::string> bank1 {
     { "01", "AMD" },
     { "02", "AMI" },
     { "83", "Fairchild" },
@@ -139,7 +141,7 @@ std::unordered_map<std::string, std::string> bank1 {
 };
 
 // Continuation 1
-std::unordered_map<std::string, std::string> bank2 {
+const std::unordered_map<std::string, std::string> bank2 {
     { "01", "Cirrus Logic" },
     { "02", "National Instruments" },
     { "83", "ILC Data Device" },
@@ -269,7 +271,7 @@ std::unordered_map<std::string, std::string> bank2 {
 };
 
 // Continuation 2
-std::unordered_map<std::string, std::string> bank3 {
+const std::unordered_map<std::string, std::string> bank3 {
     { "01", "Camintonn Corporation" },
     { "02", "ISOA Incorporated" },
     { "83", "Agate Semiconductor" },
@@ -399,7 +401,7 @@ std::unordered_map<std::string, std::string> bank3 {
 };
 
 // Continuation 3
-std::unordered_map<std::string, std::string> bank4 {
+const std::unordered_map<std::string, std::string> bank4 {
     { "01", "Solectron" },
     { "02", "Optosys Technologies" },
     { "83", "Buffalo (Formerly Melco)" },
@@ -529,7 +531,7 @@ std::unordered_map<std::string, std::string> bank4 {
 };
 
 // Continuation 4
-std::unordered_map<std::string, std::string> bank5 {
+const std::unordered_map<std::string, std::string> bank5 {
     { "01", "T-RAM Incorporated" },
     { "02", "Innovics Wireless" },
     { "83", "Teknovus" },
@@ -659,7 +661,7 @@ std::unordered_map<std::string, std::string> bank5 {
 };
 
 // Continuation 5
-std::unordered_map<std::string, std::string> bank6 {
+const std::unordered_map<std::string, std::string> bank6 {
     { "01", "Specular Networks" },
     { "02", "Patriot Memory (PDP Systems)" },
     { "83", "U-Chip Technology Corp" },
@@ -789,7 +791,7 @@ std::unordered_map<std::string, std::string> bank6 {
 };
 
 // Continuation 6
-std::unordered_map<std::string, std::string> bank7 {
+const std::unordered_map<std::string, std::string> bank7 {
     { "01", "MOVEKING" },
     { "02", "Mavrix Technology Inc" },
     { "83", "CellGuide Ltd" },
@@ -919,7 +921,7 @@ std::unordered_map<std::string, std::string> bank7 {
 };
 
 // Continuation 7
-std::unordered_map<std::string, std::string> bank8 {
+const std::unordered_map<std::string, std::string> bank8 {
     { "01", "Siklu Communication Ltd" },
     { "02", "A Force Manufacturing Ltd" },
     { "83", "Strontium" },
@@ -1049,7 +1051,7 @@ std::unordered_map<std::string, std::string> bank8 {
 };
 
 // Continuation 8
-std::unordered_map<std::string, std::string> bank9 {
+const std::unordered_map<std::string, std::string> bank9 {
     { "01", "3D PLUS" },
     { "02", "Diehl Aerospace" },
     { "83", "Fairchild" },
@@ -1179,7 +1181,7 @@ std::unordered_map<std::string, std::string> bank9 {
 };
 
 // Continuation 9
-std::unordered_map<std::string, std::string> bank10 {
+const std::unordered_map<std::string, std::string> bank10 {
     { "01", "Weltronics Co LTD" },
     { "02", "VMware Inc" },
     { "83", "Hewlett Packard Enterprise" },
@@ -1309,7 +1311,7 @@ std::unordered_map<std::string, std::string> bank10 {
 };
 
 // Continuation 10
-std::unordered_map<std::string, std::string> bank11 {
+const std::unordered_map<std::string, std::string> bank11 {
     { "01", "Foerd Technology Co Ltd" },
     { "02", "KingSpec" },
     { "83", "Codasip GmbH" },
@@ -1439,7 +1441,7 @@ std::unordered_map<std::string, std::string> bank11 {
 };
 
 // Continuation 11
-std::unordered_map<std::string, std::string> bank12 {
+const std::unordered_map<std::string, std::string> bank12 {
     { "01", "ABIT Electronics (Shenzhen) Co Ltd" },
     { "02", "Semidrive" },
     { "83", "MyTek Electronics Corp" },
@@ -1569,7 +1571,7 @@ std::unordered_map<std::string, std::string> bank12 {
 };
 
 // Continuation 12
-std::unordered_map<std::string, std::string> bank13 {
+const std::unordered_map<std::string, std::string> bank13 {
     { "01", "Beijing Haawking Technology Co Ltd" },
     { "02", "Open HW Group" },
     { "83", "JHICC" },
@@ -1699,7 +1701,7 @@ std::unordered_map<std::string, std::string> bank13 {
 };
 
 // Continuation 13
-std::unordered_map<std::string, std::string> bank14 {
+const std::unordered_map<std::string, std::string> bank14 {
     { "01", "TECOTON" },
     { "02", "Abko Co Ltd" },
     { "83", "Shenzhen Feisrike Technology Co Ltd" },
@@ -1829,7 +1831,7 @@ std::unordered_map<std::string, std::string> bank14 {
 };
 
 // Continuation 14
-std::unordered_map<std::string, std::string> bank15 {
+const std::unordered_map<std::string, std::string> bank15 {
     { "01", "Kalray SA" },
     { "02", "Shanghai Iluvatar CoreX Semiconductor Co" },
     { "83", "Fungible Inc" },
@@ -1897,7 +1899,7 @@ std::unordered_map<std::string, std::string> bank15 {
     { "C1", "Kaibright Electronic Technologies" },
 };
 
-std::unordered_map<std::string, std::string> banks[] {
+const std::array<std::unordered_map<std::string, std::string>, 15> banks {
     bank1, bank2, bank3, bank4, bank5, bank6, bank7, bank8,
     bank9, bank10, bank11, bank12, bank13, bank14, bank15
 };
@@ -1927,16 +1929,19 @@ std::string convert_id_to_vendor(std::string vendor_id) {
 
     // Get bank number
     std::istringstream buffer(two_hex_str);
-    uint16_t value;
-    buffer >> std::hex >> value;
+    uint16_t bank_num;
+    buffer >> std::hex >> bank_num;
 
     // Remove parity bit
-    value &= 0x7F;
+    bank_num &= 0x7F;
 
     // Get vendor number
     two_hex_str = vendor_id.substr(0, 2);
 
-    return banks[value][two_hex_str];
+    auto it = banks.at(bank_num).find(two_hex_str);
+    if (it != banks.at(bank_num).end())
+        return it->second;
+    return "";
 }
 
 #endif // JEDEC_HPP_

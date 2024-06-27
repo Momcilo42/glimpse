@@ -1,10 +1,10 @@
 #ifndef UTIL_HPP_
 #define UTIL_HPP_
 
-#include <iostream>
+#include <string>
 #include <vector>
 #include <algorithm> // std::sort
-#include <chrono>
+#include <cstdint>
 
 #define VERSION			"0.1beta"
 
@@ -17,7 +17,7 @@ void read_args(int argc, char *argv[]);
 std::string format_time(uint64_t time_s);
 std::string format_size(uint64_t size);
 std::string center_string(const std::string str, const uint32_t width);
-std::string get_current_time(time_t *time = nullptr);
+std::string get_current_time_str();
 
 template<typename T>
 void sort_vector(std::vector<T> *vec, bool (*sort_criteria)(T a, T b)) {

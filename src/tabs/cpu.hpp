@@ -10,7 +10,7 @@
 struct cpu_process {
 	struct process      process = {0};
     struct pid_stat     stats = {};
-	_Float32            usage_percent = 0;
+	double              usage_percent = 0;
     uint64_t            uptime = 0; // in seconds
     // cpu_uptime when last checked
     uint64_t            cpu_uptime = 0; // in seconds

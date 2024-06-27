@@ -6,9 +6,6 @@ extern "C" {
     #include <panel.h>
 }
 
-// 1s
-#define UPDATE_INTERVAL_MS	(1000)
-
 class Tab {
 public:
     Tab() {
@@ -69,7 +66,7 @@ protected:
         info_block_size = new_size;
 
         proc_block_start = info_block_size;
-        proc_block_size = tab_window->_maxy - proc_block_start;
+        proc_block_size = getmaxy(tab_window) - proc_block_start;
 
         if (proc_table_pos > proc_block_size)
             proc_table_pos = proc_block_size;

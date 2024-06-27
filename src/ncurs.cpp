@@ -11,6 +11,9 @@ extern "C" {
 extern bool quit;
 extern bool lock;
 
+// 1s
+#define UPDATE_INTERVAL_MS	(1000)
+
 void ncurses_init() {
 	// init screen and sets up screen
 	initscr();

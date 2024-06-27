@@ -3,6 +3,7 @@
 
 #include <iostream>
 #include <vector>
+#include <cstdint>
 
 extern "C" {
 	#include <unistd.h> // getuid(), access()
@@ -17,7 +18,7 @@ struct cpuinfo_core {
 	std::string model_name = "";
 	uint32_t stepping = 0;
 	std::string microcode = "";
-	_Float32 cpu_MHz = 0;
+	double cpu_MHz = 0;
 	std::string cache_size = "";
 	uint32_t physical_id = 0;
 	uint32_t siblings = 0;
@@ -31,7 +32,7 @@ struct cpuinfo_core {
 	std::string wp = "";
 	std::string flags = "";
 	std::string bugs = "";
-	_Float32 bogomips = 0;
+	double bogomips = 0;
 	uint32_t clflush_size = 0;
 	uint32_t cache_alignment = 0;
 	std::string address_sizes = "";
@@ -195,93 +196,93 @@ struct net_interface {
 
 struct pid_stat {
     // (1) The process ID.
-	int32_t pid;
+	int32_t pid = 0;
     // (2) The filename of the executable, in parentheses. This is visible whether or not the executable is swapped out.
-	std::string comm;
+	std::string comm = "";
     // (3) One character from the string "RSDZTW" where R is running, S is sleeping in an interruptible wait, D is waiting in uninterruptible disk sleep, Z is zombie, T is traced or stopped (on a signal), and W is paging.
-	char state;
+	char state = 'T';
     // (4) The PID of the parent.
-	int32_t ppid;
+	int32_t ppid = 0;
     // (5) The process group ID of the process.
-	int32_t pgrp;
+	int32_t pgrp = 0;
     // (6) The session ID of the process.
-	int32_t session;
+	int32_t session = 0;
     // (7) The controlling terminal of the process. (The minor device number is contained in the combination of bits 31 to 20 and 7 to 0; the major device number is in bits 15 to 8.)
-	int32_t tty_nr;
+	int32_t tty_nr = 0;
     // (8) The ID of the foreground process group of the controlling terminal of the process.
-	int32_t tpgid;
+	int32_t tpgid = 0;
 	// (9) The kernel flags word of the process. For bit meanings, see the PF_* defines in the Linux kernel source file include/linux/sched.h. Details depend on the kernel version.
-	uint32_t flags;
+	uint32_t flags = 0;
     // (10) The number of minor faults the process has made which have not required loading a memory page from disk.
-	uint64_t minflt;
+	uint64_t minflt = 0;
     // (11) The number of minor faults that the process's waited-for children have made.
-	uint64_t cminflt;
+	uint64_t cminflt = 0;
     // (12) The number of major faults the process has made which have required loading a memory page from disk.
-	uint64_t majflt;
+	uint64_t majflt = 0;
     // (13) The number of major faults that the process's waited-for children have made.
-	uint64_t cmajflt;
+	uint64_t cmajflt = 0;
     // (14) Amount of time that this process has been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK)). This includes guest time, guest_time (time spent running a virtual CPU, see below), so that applications that are not aware of the guest time field do not lose that time from their calculations.
-	uint64_t utime;
+	uint64_t utime = 0;
     // (15) Amount of time that this process has been scheduled in kernel mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK)).
-	uint64_t stime;
+	uint64_t stime = 0;
     // (16) Amount of time that this process's waited-for children have been scheduled in user mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK)). (See also times(2).) This includes guest time, cguest_time (time spent running a virtual CPU, see below).
-	uint64_t cutime;
+	uint64_t cutime = 0;
     // (17) Amount of time that this process's waited-for children have been scheduled in kernel mode, measured in clock ticks (divide by sysconf(_SC_CLK_TCK)).
-	uint64_t cstime;
+	uint64_t cstime = 0;
 	// (18) For processes running a real-time scheduling policy (policy below; see sched_setscheduler(2)), this is the negated scheduling priority, minus one; that is, a number in the range -2 to -100, corresponding to real-time priorities 1 to 99. For processes running under a non-real-time scheduling policy, this is the raw nice value (setpriority(2)) as represented in the kernel. The kernel stores nice values as numbers in the range 0 (high) to 39 (low), corresponding to the user-visible nice range of -20 to 19.
-	uint64_t priority;
+	uint64_t priority = 0;
     // (19) The nice value (see setpriority(2)), a value in the range 19 (low priority) to -20 (high priority).
-    uint64_t nice;
+    uint64_t nice = 0;
 	// (20) Number of threads in this process (since Linux 2.6). Before kernel 2.6, this field was hard coded to 0 as a placeholder for an earlier removed field.
-	uint64_t num_threads;
+	uint64_t num_threads = 0;
 	// (21) The time in jiffies before the next SIGALRM is sent to the process due to an interval timer. Since kernel 2.6.17, this field is no longer maintained, and is hard coded as 0.
-	uint64_t itrealvalue;
+	uint64_t itrealvalue = 0;
 	// (22) The time the process started after system boot. In kernels before Linux 2.6, this value was expressed in jiffies. Since Linux 2.6, the value is expressed in clock ticks (divide by sysconf(_SC_CLK_TCK)).
-	unsigned long long starttime;
+	unsigned long long starttime = 0ULL;
     // (23) Virtual memory size in bytes.
-	uint64_t vsize;
+	uint64_t vsize = 0;
     // (24) Resident Set Size: number of pages the process has in real memory. This is just the pages which count toward text, data, or stack space. This does not include pages which have not been demand-loaded in, or which are swapped out.
-	uint64_t rss;
+	uint64_t rss = 0;
     // (25) Current soft limit in bytes on the rss of the process; see the description of RLIMIT_RSS in getrlimit(2).
-    uint64_t rsslim;
+    uint64_t rsslim = 0;
 	// (26) The address above which program text can run.
-	uint64_t startcode;
+	uint64_t startcode = 0;
     // (27) The address below which program text can run.
-	uint64_t endcode;
+	uint64_t endcode = 0;
 	// (28) The address of the start (i.e., bottom) of the stack.
-	uint64_t startstack;
+	uint64_t startstack = 0;
     // (29) The current value of ESP (stack pointer), as found in the kernel stack page for the process.
-	uint64_t kstkesp;
+	uint64_t kstkesp = 0;
     // (30) The current EIP (instruction pointer).
-	uint64_t kstkeip;
+	uint64_t kstkeip = 0;
     // (31) The bitmap of pending signals, displayed as a decimal number. Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-	uint64_t signal;
+	uint64_t signal = 0;
     // (32) The bitmap of blocked signals, displayed as a decimal number. Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-    uint64_t blocked;
+    uint64_t blocked = 0;
 	// (33) The bitmap of ignored signals, displayed as a decimal number. Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-	uint64_t sigignore;
+	uint64_t sigignore = 0;
 	// (34) The bitmap of caught signals, displayed as a decimal number. Obsolete, because it does not provide information on real-time signals; use /proc/[pid]/status instead.
-	uint64_t sigcatch;
+	uint64_t sigcatch = 0;
     // (35) This is the "channel" in which the process is waiting. It is the address of a system call, and can be looked up in a namelist if you need a textual name. (If you have an up-to-date /etc/psdatabase, then try ps -l to see the WCHAN field in action.)
-	uint64_t wchan;
+	uint64_t wchan = 0;
     // (36) Number of pages swapped (not maintained).
-	uint64_t nswap;
+	uint64_t nswap = 0;
     // (37) Cumulative nswap for child processes (not maintained).
-	uint64_t cnswap;
+	uint64_t cnswap = 0;
 	// (38) Signal to be sent to parent when we die.
-	int32_t exit_signal;
+	int32_t exit_signal = 0;
 	// (39) CPU number last executed on.
-	int32_t processor;
+	int32_t processor = 0;
 	// (40) Real-time scheduling priority, a number in the range 1 to 99 for processes scheduled under a real-time policy, or 0, for non-real-time processes (see sched_setscheduler(2)).
-	uint32_t rt_priority;
+	uint32_t rt_priority = 0;
 	// (41) Scheduling policy (see sched_setscheduler(2)). Decode using the SCHED_* constants in linux/sched.h.
-	uint32_t policy;
+	uint32_t policy = 0;
 	// (42) Aggregated block I/O delays, measured in clock ticks (centiseconds).
-	unsigned long long delayacct_blkio_ticks;
+	unsigned long long delayacct_blkio_ticks = 0ULL;
 	// (43) Guest time of the process (time spent running a virtual CPU for a guest operating system), measured in clock ticks (divide by sysconf(_SC_CLK_TCK)).
-	uint64_t guest_time;
+	uint64_t guest_time = 0;
 	// (44) Guest time of the process's children, measured in clock ticks (divide by sysconf(_SC_CLK_TCK)).
-	int64_t cguest_time;
+	int64_t cguest_time = 0;
 };
 
 // Values are in memory pages

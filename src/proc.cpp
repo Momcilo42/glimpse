@@ -777,12 +777,12 @@ void get_uptime(uint64_t *uptime) {
 }
 
 void get_pid_uptime(const uint64_t pid, uint64_t *pid_uptime) {
-    struct pid_stat stats;
+    struct pid_stat stats = { 0 };
     read_pid_stat(pid, &stats);
     // Convert from ticks to seconds
     uint32_t ticks_per_s = sysconf(_SC_CLK_TCK);
     // Start time in seconds since boot
-    uint64_t system_uptime;
+    uint64_t system_uptime = 0;
     get_uptime(&system_uptime);
     stats.starttime = stats.starttime / ticks_per_s;
     *pid_uptime = system_uptime - stats.starttime;

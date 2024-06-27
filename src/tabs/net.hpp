@@ -10,8 +10,8 @@
 struct net_interface_ext {
         struct net_interface net = {};
         uint64_t last_checked = 0; // in seconds
-        _Float32 upload_per_s = 0; // B/s
-        _Float32 download_per_s = 0; // B/s
+        double upload_per_s = 0; // B/s
+        double download_per_s = 0; // B/s
 };
 
 struct net_process {

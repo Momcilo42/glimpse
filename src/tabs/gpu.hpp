@@ -6,7 +6,7 @@
 
 struct gpu_process {
 	struct process process = {0};
-	_Float32 usage_percent = 0;
+	double usage_percent = 0;
     uint64_t usage_ns = 0;
     // system uptime when last checked
     uint64_t last_checked = 0; // in seconds

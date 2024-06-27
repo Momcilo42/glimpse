@@ -7,6 +7,7 @@
 #include <dirent.h> // DIR, struct dirent, opendir()
 #include <cstring> // strncmp
 #include <fstream> // getline
+#include <array>    // std::array
 
 #define COLUMN_1    0           // pid
 #define COLUMN_2    COLUMN_1+8  // name
@@ -169,11 +170,11 @@ void GPU::update_gpu_process(struct gpu_process *proc) {
 
     get_uptime(&proc->last_checked);
     get_pid_gpu_usage(proc->process.pid, &proc->usage_ns);
-    _Float32 cpu_time_delta = (proc->last_checked - old_last_checked);
-    _Float32 gpu_time_delta = (proc->usage_ns - old_usage_ns);
+    double cpu_time_delta = (proc->last_checked - old_last_checked);
+    double gpu_time_delta = (proc->usage_ns - old_usage_ns);
     // Convert to seconds
     gpu_time_delta /= 1000000000.0;
-    _Float32 usage = gpu_time_delta / cpu_time_delta * 100.0;
+    double usage = gpu_time_delta / cpu_time_delta * 100.0;
     // If really quick refresh happens protect against divide by 0
     proc->usage_percent = cpu_time_delta ? usage : 0;
 
@@ -248,7 +249,7 @@ void get_gpu_model_name(std::string pci_addr, std::string *name) {
     std::string cmd = "lspci | grep VGA | grep " + pci_addr;
     std::array<char, 128> buffer;
     std::string line;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
@@ -256,7 +257,7 @@ void get_gpu_model_name(std::string pci_addr, std::string *name) {
     if (fgets(buffer.data(), buffer.size(), pipe.get()) == nullptr) {
         // Try looking for headless GPUs
         cmd = "lspci | grep \"Display controller\" | grep " + pci_addr;
-        std::unique_ptr<FILE, decltype(&pclose)> pipe2(popen(cmd.c_str(), "r"), pclose);
+        std::unique_ptr<FILE, int(*)(FILE*)> pipe2(popen(cmd.c_str(), "r"), pclose);
         if (!pipe2) {
             throw std::runtime_error("popen() failed!");
         }
@@ -376,7 +377,7 @@ void GPU::update() {
         /* Clear extra characters if previous value was longer */
 		wclrtoeol(tab_window);
         mvwprintw(tab_window, proc_block_start+i, COLUMN_2, "%s", proc->process.name.c_str());
-        mvwprintw(tab_window, proc_block_start+i, COLUMN_3, "%6.2f", proc->usage_percent);
+        mvwprintw(tab_window, proc_block_start+i, COLUMN_3, "%6.2lf", proc->usage_percent);
         if (proc->vram == -1)
             mvwprintw(tab_window, proc_block_start+i, COLUMN_4, "%s", "Absent");
         else

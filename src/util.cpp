@@ -2,6 +2,8 @@
 
 #include <signal.h>
 #include <iomanip> // setprecision
+#include <chrono>
+#include <iostream>
 
 extern "C" {
 	#include <unistd.h> // getuid()
@@ -19,6 +21,11 @@ void sig_handler(int signo) {
 void setup_signal_handler() {
 	struct sigaction act;
 	act.sa_handler = sig_handler;
+	act.sa_flags = SA_NODEFER | SA_SIGINFO;
+	/* Signals blocked during the execution of the handler. */
+	sigemptyset(&act.sa_mask);
+	sigaddset(&act.sa_mask, SIGINT);
+	sigaddset(&act.sa_mask, SIGTERM);
 	sigaction(SIGINT, &act, NULL);
 	sigaction(SIGTERM, &act, NULL);
 }
@@ -64,6 +71,9 @@ void read_args(int argc, char *argv[]) {
 }
 
 std::string format_time(uint64_t time_s) {
+	if (!time_s)
+		return "00:00:00";
+
     int seconds = time_s % 60;
     int minutes = (time_s / 60) % 60;
     int hours = (time_s / 3600) % 24;
@@ -122,11 +132,9 @@ std::string center_string(std::string str, uint32_t width) {
 	return ret;
 }
 
-std::string get_current_time(time_t *time) {
+std::string get_current_time_str() {
     time_t tt = std::time(0);   // get time now
     char buf[100] = {0};
     std::strftime(buf, sizeof(buf), "%Y_%b_%d - %H:%M:%S", std::localtime(&tt));
-	if(time)
-		*time = tt;
     return std::string(buf);
 }

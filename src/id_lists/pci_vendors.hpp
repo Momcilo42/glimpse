@@ -4,11 +4,12 @@
 #include <unordered_map>
 #include <string>
 #include <sstream>
+#include <cstdint>
 
 /* Table gotten from https://devicehunt.com/all-pci-vendors */
 /* Can also be searched at: https://pcisig.com/membership/member-companies */
 
-std::unordered_map<std::string, std::string> vendors {
+const std::unordered_map<std::string, std::string> vendors {
     { "0x21c3", "21st Century Computer Corp." },
     { "0x1052", "?Young Micro Systems" },
     { "0x156b", "2wire Inc" },
@@ -2351,7 +2352,10 @@ std::unordered_map<std::string, std::string> vendors {
 };
 
 std::string convert_pci_id_to_vendor(std::string vendor_id) {
-    return vendors[vendor_id];
+    auto it = vendors.find(vendor_id);
+    if (it != vendors.end())
+        return it->second;
+    return "";
 }
 
 std::string convert_pci_id_to_vendor(uint32_t vendor_id) {

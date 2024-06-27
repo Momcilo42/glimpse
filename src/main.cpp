@@ -55,7 +55,7 @@ int main(int argc, char *argv[]) {
 	tabs.push_back(&net_tab);
 	hide_all_panels(tabs);
 
-	Tab *selected_tab;
+	Tab *selected_tab = nullptr;
 	while (!quit) {
 		selected_tab = tabs.at(nav.pos);
 		select_tab_panel(selected_tab, tabs);

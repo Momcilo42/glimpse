@@ -232,14 +232,14 @@ void get_sys_dri_clients(const std::string id, std::vector<struct dri_client> *c
         line = line.substr(0, delim_pos);
         delim_pos = line.find_last_not_of(" ");
         line = line.substr(0, delim_pos+1);
-        client.magic = std::stoi(value);
+        client.magic = value.empty()? -1 : std::stoi(value);
 
         delim_pos = line.find_last_of(" ");
         value = line.substr(delim_pos+1);
         line = line.substr(0, delim_pos);
         delim_pos = line.find_last_not_of(" ");
         line = line.substr(0, delim_pos+1);
-        client.uid = std::stoi(value);
+        client.uid = value.empty()? -1 : std::stoi(value);
 
         delim_pos = line.find_last_of(" ");
         value = line.substr(delim_pos+1);
@@ -260,14 +260,14 @@ void get_sys_dri_clients(const std::string id, std::vector<struct dri_client> *c
         line = line.substr(0, delim_pos);
         delim_pos = line.find_last_not_of(" ");
         line = line.substr(0, delim_pos+1);
-        client.dev = std::stoi(value);
+        client.dev = value.empty()? -1 : std::stoi(value);
 
         delim_pos = line.find_last_of(" ");
         value = line.substr(delim_pos+1);
         line = line.substr(0, delim_pos);
         delim_pos = line.find_last_not_of(" ");
         line = line.substr(0, delim_pos+1);
-        client.pid = std::stoi(value);
+        client.pid = value.empty()? -1 : std::stoi(value);
 
         delim_pos = line.find_first_not_of(" ");
         value = line.substr(delim_pos);
@@ -322,7 +322,7 @@ void get_sys_dri_freq(const std::string id, uint32_t *freq) {
         line = line.substr(0, delim_pos);
         break;
     }
-    *freq = std::stoi(line);
+    *freq = line.empty()? -1 : std::stoi(line);
 }
 
 void get_sys_drm_freq(const std::string id, uint32_t *freq) {
@@ -342,7 +342,7 @@ void get_sys_drm_freq(const std::string id, uint32_t *freq) {
         line = line.substr(0, delim_pos);
         break;
     }
-    *freq = std::stoi(line);
+    *freq = line.empty()? -1 : std::stoi(line);
 }
 
 void get_sys_freq(const std::string id, uint32_t *freq) {

@@ -7,6 +7,7 @@
 #include <netinet/in.h>
 #include <arpa/inet.h>
 #include <memory> // unique_ptr
+#include <array>    // std::array
 
 #define COLUMN_1    0                   // pid
 #define COLUMN_2    COLUMN_1+8          // name
@@ -25,7 +26,7 @@ void get_ssid(const std::string interface_name, std::string *ssid) {
     std::string cmd = std::string("iwgetid") + " " + interface_name + " -r";
     std::array<char, 128> buffer;
     std::string line;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
@@ -174,8 +175,8 @@ void NET::update_net_interfaces() {
     uint64_t old_last_checked;
     uint64_t new_last_checked;
     uint64_t time_delta;
-    _Float32 up = 0;
-    _Float32 down = 0;
+    double up = 0;
+    double down = 0;
     for (uint32_t i = 0; i < interfaces.size(); i++) {
         old_last_checked = interfaces.at(i).last_checked;
         new_last_checked = net_ifs.at(i).last_checked;
@@ -184,7 +185,7 @@ void NET::update_net_interfaces() {
         down = 0;
         time_delta = new_last_checked - old_last_checked;
         if (time_delta) {
-            up = (net_ifs.at(i).net.tx_bytes - interfaces.at(i).net.tx_bytes)*1.0 /time_delta;
+            up = (net_ifs.at(i).net.tx_bytes - interfaces.at(i).net.tx_bytes)*1.0 / time_delta;
             down = (net_ifs.at(i).net.rx_bytes - interfaces.at(i).net.rx_bytes)*1.0 / time_delta;
         } else {
             up = 0;
@@ -201,7 +202,7 @@ void find_processes_with_connections(std::vector<struct net_process> *proc_vec) 
     const char* cmd = "lsof -i";
     std::array<char, 256> buffer;
     std::string line;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd, "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
@@ -231,7 +232,7 @@ void find_processes_with_connections(std::vector<struct net_process> *proc_vec) 
         line = line.substr(delim_pos+1);
         delim_pos = line.find_first_not_of(" ");
         line = line.substr(delim_pos);
-        proc.process.pid = std::stoi(value);
+        proc.process.pid = value.empty()? -1 : std::stoi(value);
 		get_process_name(proc.process.pid, &proc.process.name);
 		get_calling_command(proc.process.pid, &proc.process.cmd);
 
@@ -370,7 +371,7 @@ void NET::update() {
     if (process_vector_size != previous_size)
         for (uint32_t i = 0; i < process_vector_size; i++) {
             // Move cursor to beginning of row
-            mvcur(tab_window->_curx, tab_window->_cury, info_block_start+i, 0);
+            mvcur(getcurx(tab_window), getcury(tab_window), info_block_start+i, 0);
             // Erase row
 		    wclrtoeol(tab_window);
         }

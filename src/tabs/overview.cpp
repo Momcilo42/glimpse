@@ -7,6 +7,8 @@
 #include <array>
 #include <memory> // unique_ptr
 #include <sstream>
+#include <iostream> // std::ifstream
+#include <fstream>	// std::ifstream
 
 #define COLUMN_1    0
 #define COLUMN_2    COLUMN_1+10
@@ -19,7 +21,9 @@ uint64_t Overview::get_pid_at_pos() {
 }
 
 struct monitor {
+	std::string manufacturer = "";
 	std::string model = "";
+	bool built_in = false;
 	uint32_t width = 0;
 	uint32_t height = 0;
 };
@@ -36,84 +40,168 @@ struct active_user {
 	std::string connection = "";
 };
 
-void get_monitors(std::vector<struct monitor> *monitors) {
-    std::string cmd = "get-edid -q 2>/dev/null | parse-edid 2>/dev/null";
+bool is_file_empty(std::string path) {
+	bool ret = false;
+	std::ifstream pFile;
+	pFile.open(path);
+	ret = pFile.peek() == std::ifstream::traits_type::eof();
+	pFile.close();
+	return ret;
+}
+
+void get_active_display_ports(std::vector<std::string> *active_ports) {
+	// Find all edid files
+	// TODO maybe change to manual search like in get_non_virtual_block_devices not to rely on find
+	std::string cmd = "find -L /sys/class/drm/ -maxdepth 2 -name edid 2>/dev/null";
     std::array<char, 128> buffer;
     std::string line;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
 
-	struct monitor m = {};
-
-	bool reading_monitor = false;
-	std::vector<std::string> modes;
-	std::string preferred_mode = "";
 	int delim_pos = -1;
     while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+		// Get line
+        line = buffer.data();
+        // Remove new line character
+        delim_pos = line.find_first_of("\n");
+        if (delim_pos != -1)
+            line = line.substr(0, delim_pos);
+		if (!is_file_empty(line))
+			active_ports->push_back(line);
+	}
+}
+
+void check_pnp_ids(std::string *id) {
+    std::ifstream infile("/usr/share/hwdata/pnp.ids");
+    if (!infile.is_open())
+		return;
+
+	std::string line;
+	int delim_pos = -1;
+	std::string manufacturer_id;
+	std::string manufacturer_name;
+	// Read data from the file object and put it into a string.
+	while (getline(infile, line)) {
+        delim_pos = line.find_first_of("\t");
+        if (delim_pos != -1) {
+            manufacturer_id = line.substr(0, delim_pos);
+            manufacturer_name = line.substr(delim_pos+1);
+		}
+		if (manufacturer_id.compare(*id) == 0) {
+			*id = manufacturer_name;
+			break;
+		}
+	}
+}
+
+void get_monitor_data_name(std::string *path, struct monitor *m) {
+	std::string cmd = "edid-decode --skip-hex-dump --skip-sha " + *path;
+    std::array<char, 128> buffer;
+    std::string line;
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+
+	int delim_pos = -1;
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+		// Get line
         line = buffer.data();
         // Remove new line character
         delim_pos = line.find_first_of("\n");
         if (delim_pos != -1)
             line = line.substr(0, delim_pos);
 
-		if (line == "Section \"Monitor\"") {
-			reading_monitor = true;
-			continue;
+		std::string manufacturer_str = "Manufacturer: ";
+		delim_pos = line.find(manufacturer_str);
+        if (delim_pos == -1)
+            continue;
+
+		line = line.substr(delim_pos + manufacturer_str.length());
+		m->manufacturer = line;
+
+		check_pnp_ids(&m->manufacturer);
+		break;
+	}
+
+	// TODOM find model
+}
+
+void get_monitor_data_native_res(std::string *path, struct monitor *m) {
+	std::string cmd = "edid-decode -n --skip-hex-dump --skip-sha " + *path + " | tail -n 1";
+    std::array<char, 128> buffer;
+    std::string line;
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
+    if (!pipe) {
+        throw std::runtime_error("popen() failed!");
+    }
+
+	int delim_pos = -1;
+    while (fgets(buffer.data(), buffer.size(), pipe.get()) != nullptr) {
+		// Get line
+        line = buffer.data();
+        // Remove new line character
+        delim_pos = line.find_first_of("\n");
+        if (delim_pos != -1)
+            line = line.substr(0, delim_pos);
+
+        // Remove empty space before
+        delim_pos = line.find_first_not_of(" ");
+        if (delim_pos != -1)
+            line = line.substr(delim_pos);
+        // Remove empty space after
+        delim_pos = line.find_first_of(" ");
+        if (delim_pos != -1)
+            line = line.substr(0, delim_pos);
+
+		// Separate width and height
+        delim_pos = line.find_first_of("x");
+        if ((delim_pos == -1) || line.empty())
+			break;
+
+        // Width
+		m->width = std::atoi(line.substr(0, delim_pos).c_str());
+        // Height
+		m->height = std::atoi(line.substr(delim_pos+1).c_str());
+
+		break;
+	}
+}
+
+void is_monitor_built_in(std::string *path, struct monitor *m) {
+	const std::string built_in_identifiers[] = { "eDP", "LVDS" };
+
+	for (std::string identifier : built_in_identifiers) {
+		if (path->find(identifier) != std::string::npos) {
+			m->built_in = true;
+			break;
 		}
+	}
+}
 
-		if ((line == "EndSection") && reading_monitor) {
-			for (int i = 0; i < (int)modes.size(); i++)
-       			if (modes[i].find(preferred_mode) != std::string::npos) {
-					line = modes[i].substr(modes[i].find_last_of("\"")+2);
-					break;
-				}
+void get_monitor_data(std::string *path, struct monitor *m) {
+	get_monitor_data_name(path, m);
+	is_monitor_built_in(path, m);
+	get_monitor_data_native_res(path, m);
+}
 
-			std::istringstream iss(line);
-			std::string s;
-			std::vector<int> numbers = {};
-			while (std::getline(iss, s, ' '))
-				numbers.push_back(std::stoi(s));
-			// Remove clock
-			numbers.erase(numbers.begin());
+void get_monitors(std::vector<struct monitor> *monitors) {
+	std::vector<std::string> active_ports;
+	get_active_display_ports(&active_ports);
 
-			m.width = numbers[0];
-			m.height = numbers[numbers.size()/2];
-
-			monitors->push_back(m);
-			m = {};
-			continue;
-		}
-
-        if (line.find("ModelName") != std::string::npos) {
-			line = line.substr(0, line.find_last_of("\""));
-			line = line.substr(line.find_last_of("\"")+1);
-			m.model = line;
-			continue;
-		}
-
-        if (line.find("PreferredMode") != std::string::npos) {
-			line = line.substr(0, line.find_last_of("\""));
-			line = line.substr(line.find_last_of("\"")+1);
-			preferred_mode = line;
-			continue;
-		}
-
-		// Modeline is in format:
-		// Modeline  "(Label)" (clk)     (x-resolutions)        (y-resolutions)
-        if (line.find("Modeline") != std::string::npos) {
-			line = line.substr(0, line.find_last_of("1234567890"));
-			line = line.substr(line.find_last_of("\t")+1);
-			modes.push_back(line);
-		}
+	for (auto path : active_ports) {
+		struct monitor m;
+		get_monitor_data(&path, &m);
+		monitors->push_back(m);
 	}
 }
 
 void get_active_users(std::vector<struct active_user> *users) {
     std::string cmd = "who -u";
     std::array<char, 128> buffer;
-    std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd.c_str(), "r"), pclose);
+    std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd.c_str(), "r"), pclose);
     if (!pipe) {
         throw std::runtime_error("popen() failed!");
     }
@@ -157,8 +245,10 @@ Overview::Overview() {
 	std::vector<struct monitor> monitors = {};
 	get_monitors(&monitors);
 	for (int i = 0; i < (int)monitors.size(); i++)
-		mvwprintw(tab_window, info_block_start + row++, 0, "Monitor: %s @%dx%d",
-			monitors[i].model.c_str(), monitors[i].width, monitors[i].height);
+		mvwprintw(tab_window, info_block_start + row++, 0, "Monitor: %s %s @%dx%d %s",
+			monitors[i].manufacturer.c_str(), monitors[i].model.c_str(),
+			monitors[i].width, monitors[i].height,
+			monitors[i].built_in ? "built-in" : "");
 
 	set_info_block_size(row);
 	update();
@@ -168,7 +258,7 @@ void Overview::update() {
 	int row = 1;
 
 	mvwprintw(tab_window, proc_block_start + row++, 0, "Current server time is: %s",
-		get_current_time().c_str());
+		get_current_time_str().c_str());
     uint64_t system_uptime;
     get_uptime(&system_uptime);
     mvwprintw(tab_window, proc_block_start + row++, 0, "Uptime: %s\n", format_time(system_uptime).c_str());

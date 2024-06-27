@@ -63,13 +63,13 @@ void DISK::find_disks() {
 //     const char* cmd = "udevadm info --query=property --name ";
 //     std::array<char, 128> buffer;
 //     std::string line;
-//     std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(cmd, "r"), pclose);
+//     std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(cmd, "r"), pclose);
 //     if (!pipe) {
 //         throw std::runtime_error("popen() failed!");
 //     }
 // 	for (struct disk_device &d : devices) {
 //         std::string command(cmd + d.id);
-//         std::unique_ptr<FILE, decltype(&pclose)> pipe(popen(command.c_str(), "r"), pclose);
+//         std::unique_ptr<FILE, int(*)(FILE*)> pipe(popen(command.c_str(), "r"), pclose);
 //         if (!pipe) {
 //             throw std::runtime_error("popen() failed!");
 //         }
@@ -172,7 +172,7 @@ void DISK::update() {
     if (process_vector_size != previous_size)
         for (uint32_t i = 0; i < process_vector_size; i++) {
             // Move cursor to beginning of row
-            mvcur(tab_window->_curx, tab_window->_cury, info_block_start+i, 0);
+            mvcur(getcurx(tab_window), getcury(tab_window), info_block_start+i, 0);
             // Erase row
 		    wclrtoeol(tab_window);
         }

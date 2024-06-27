@@ -7,14 +7,14 @@ This aims to give the user the most important processes per component at a glimp
 ## Install
 **make** and **g++** are used to build the program  
 **ncurses** is used for the interface  
-**read-edid** is used to get the info of the connected monitor (if it exists)  
+**edid-decode** is used to get the info of the connected monitor (if it exists)  
 **dmidecode** is used to get info about installed RAM slots and sticks  
 **wireless-tools** is used to get the name/SSID of the connected WiFi network  
 **lsof** is used to get the processes with open connections to the internet
 
 Install on Ubuntu 22.04:
 ``` bash
-sudo apt install -y make g++ libncurses5-dev read-edid dmidecode wireless-tools lsof
+sudo apt install -y make g++ libncurses-dev edid-decode dmidecode wireless-tools lsof
 ```
 ## Build
 ``` bash
